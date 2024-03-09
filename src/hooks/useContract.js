@@ -1,8 +1,10 @@
 import { useEffect, useState, useCallback } from 'react'
 import { ethers } from 'ethers'
 import { toast } from 'react-toastify'
+import abi from '../abi.json'
 
-export function useContract(contract, signer) {
+export function useContract(signer) {
+  const [contract, setContract] = useState(null)
   const [mintLoading, setMintLoading] = useState(false)
   const [buyTokensLoading, setBuyTokensLoading] = useState(false)
   const [contractInfo, setContractInfo] = useState({
@@ -13,8 +15,37 @@ export function useContract(contract, signer) {
     totalSupply: '',
     accountBalance: '',
   })
+  const [tsx, setTsx] = useState([])
 
   const decimals = 18
+
+  useEffect(() => {
+    if (Boolean(signer)) {
+      const newContract = new ethers.Contract(
+        process.env.REACT_APP_CONTRACT_ADDRESS,
+        abi,
+        signer
+      )
+      setContract(newContract)
+
+      newContract.on('Transfer', (from, to, amount, e) => {
+        console.log(from, to, amount, e)
+        setTsx((currentTsx) => [
+          ...currentTsx,
+          {
+            txHash: e.log.transactionHash,
+            from,
+            to,
+            amount: amount.toString(),
+          },
+        ])
+      })
+
+      return () => {
+        newContract.off('Transfer')
+      }
+    }
+  }, [signer])
 
   const getContractData = useCallback(async () => {
     if (Boolean(contract)) {
@@ -43,8 +74,8 @@ export function useContract(contract, signer) {
   const buyTokens = async (amountOfTokens) => {
     if (Boolean(contract) && Boolean(signer)) {
       const owner = await contract.owner()
+
       if (signer.address === owner) {
-        console.log(ethers.parseEther((amountOfTokens / 10).toString()))
         toast.error("Owner can't buy tokens")
         return
       }
@@ -97,43 +128,6 @@ export function useContract(contract, signer) {
       }
     }
   }
-  // const disconect = async () => {
-  //   await window.ethereum.request({
-  //     method: 'wallet_revokePermissions',
-  //     params: [
-  //       {
-  //         eth_accounts: {},
-  //       },
-  //     ],
-  //   })
-  //   setProvider(null)
-  //   setSigner(null)
-  //   setNetwork('')
-  //   setBalance(null)
-  //   setContract(null)
-  //   toast.success('Disconnected from MetaMask')
-  // }
-
-  // useEffect(() => {
-  //   const getSignerBallance = async () => {
-  //     if (contract && signer) {
-  //       const balance = await contract.balanceOf(signer.address)
-
-  //       setBalance(ethers.formatUnits(balance, 'ether'))
-  //     }
-  //   }
-
-  //   getSignerBallance()
-  // }, [contract, signer])
-
-  // const getAccountBalance = async () => {
-  //   const balance = await contract.balanceOf(signer.address)
-  //   console.log(ethers.formatUnits(balance, 17))
-
-  //   setBalance(ethers.formatUnits(balance, 'ether'))
-  // }
-
-  // setSigner(await browserProvider.getSigner())
 
   return {
     contractInfo,
@@ -142,5 +136,6 @@ export function useContract(contract, signer) {
     mintTokens,
     mintLoading,
     buyTokensLoading,
+    tsx,
   }
 }

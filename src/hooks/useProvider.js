@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react'
 import { ethers } from 'ethers'
 import { toast } from 'react-toastify'
-import abi from '../abi.json'
 
 export function useProvider() {
   const [provider, setProvider] = useState(null)
-  const [contract, setContract] = useState(null)
   const [signer, setSigner] = useState(null)
   const [network, setNetwork] = useState('')
   const [balance, setBalance] = useState(null)
@@ -25,19 +23,12 @@ export function useProvider() {
       setNetwork(network.name)
 
       const currentSigner = await browserProvider.getSigner()
-      setSigner(await browserProvider.getSigner())
+      setSigner(currentSigner)
 
       const signerBalance = await browserProvider.getBalance(
         currentSigner.address
       )
       setBalance(ethers.formatUnits(signerBalance, 'ether'))
-
-      const newContract = new ethers.Contract(
-        process.env.REACT_APP_CONTRACT_ADDRESS,
-        abi,
-        currentSigner
-      )
-      setContract(newContract)
 
       const handleAccountsChanged = async () => {
         const provider = new ethers.BrowserProvider(window.ethereum)
@@ -50,62 +41,22 @@ export function useProvider() {
       window.ethereum.on('accountsChanged', handleAccountsChanged)
 
       toast.success('Connected to MetaMask')
+      setIsLoading(false)
 
-      // return () => {
-      //   window.ethereum.off('accountsChanged', handleAccountsChanged)
-      // }
+      return () => {
+        window.ethereum.off('accountsChanged', handleAccountsChanged)
+      }
     }
-
-    setIsLoading(false)
   }
 
   useEffect(() => {
     connectToMetaMask()
   }, [])
 
-  // const disconect = async () => {
-  //   await window.ethereum.request({
-  //     method: 'wallet_revokePermissions',
-  //     params: [
-  //       {
-  //         eth_accounts: {},
-  //       },
-  //     ],
-  //   })
-  //   setProvider(null)
-  //   setSigner(null)
-  //   setNetwork('')
-  //   setBalance(null)
-  //   setContract(null)
-  //   toast.success('Disconnected from MetaMask')
-  // }
-
-  // useEffect(() => {
-  //   const getSignerBallance = async () => {
-  //     if (contract && signer) {
-  //       const balance = await contract.balanceOf(signer.address)
-
-  //       setBalance(ethers.formatUnits(balance, 'ether'))
-  //     }
-  //   }
-
-  //   getSignerBallance()
-  // }, [contract, signer])
-
-  // const getAccountBalance = async () => {
-  //   const balance = await contract.balanceOf(signer.address)
-  //   console.log(ethers.formatUnits(balance, 17))
-
-  //   setBalance(ethers.formatUnits(balance, 'ether'))
-  // }
-
-  // setSigner(await browserProvider.getSigner())
-
   return {
     provider,
     signer,
     network,
-    contract,
     isLoading,
     balance,
     connectToMetaMask,

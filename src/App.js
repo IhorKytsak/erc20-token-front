@@ -12,24 +12,24 @@ import 'react-toastify/dist/ReactToastify.css'
 import { useProvider } from './hooks/useProvider'
 import { useContract } from './hooks/useContract'
 
-import './App.css'
 import Contract from './components/Contract'
+import TransactionsLog from './components/TransactionsLog'
+import './App.css'
 
 function App() {
   const isConnectedToMetaMask = window.ethereum.isConnected()
 
-  const {
-    provider,
-    connectToMetaMask,
-    network,
-    signer,
-    contract,
-    isLoading,
-    balance,
-  } = useProvider()
+  const { provider, connectToMetaMask, network, signer, isLoading, balance } =
+    useProvider()
 
-  const { contractInfo, mintTokens, mintLoading, buyTokens, buyTokensLoading } =
-    useContract(contract, signer)
+  const {
+    contractInfo,
+    mintTokens,
+    mintLoading,
+    buyTokens,
+    buyTokensLoading,
+    tsx,
+  } = useContract(signer)
 
   return (
     <div className='App'>
@@ -82,6 +82,7 @@ function App() {
             buyTokens={buyTokens}
             buyTokensLoading={buyTokensLoading}
           />
+          <TransactionsLog tsx={tsx} />
         </Box>
       )}
 
