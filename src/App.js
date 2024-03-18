@@ -1,20 +1,12 @@
-import React from 'react'
+import React, { Suspense } from 'react'
+import { Routes, Route } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
-import {
-  Button,
-  Box,
-  Card,
-  CardActions,
-  CardContent,
-  Typography,
-} from '@mui/material'
-import 'react-toastify/dist/ReactToastify.css'
-import { useProvider } from './hooks/useProvider'
-import { useContract } from './hooks/useContract'
+import { Box } from '@mui/material'
 
-import Contract from './components/Contract'
-import TransactionsLog from './components/TransactionsLog'
-import './App.css'
+import { useProvider } from './hooks/useProvider'
+import Layout from './components/Layout'
+import Home from './pages/home'
+import NFTs from './pages/nft'
 
 function App() {
   const isConnectedToMetaMask = window.ethereum.isConnected()
@@ -22,78 +14,39 @@ function App() {
   const { provider, connectToMetaMask, network, signer, isLoading, balance } =
     useProvider()
 
-  const {
-    contractInfo,
-    mintTokens,
-    mintLoading,
-    buyTokens,
-    buyTokensLoading,
-    tsx,
-  } = useContract(signer)
-
   return (
-    <div className='App'>
-      {isLoading && <h4 className='loader'>Loading...</h4>}
-
-      {isConnectedToMetaMask && Boolean(provider) && !isLoading && (
-        <Box
-          sx={{
-            maxWidth: 550,
-            width: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 5,
-          }}
-        >
-          <Card sx={{ display: 'flex', flexDirection: 'column' }}>
-            <CardContent>
-              <Typography
-                sx={{ fontSize: 16 }}
-                color='text.primary'
-                gutterBottom
-              >
-                Connected to network: {network}
-              </Typography>
-              <Typography
-                sx={{ fontSize: 16 }}
-                color='text.primary'
-                gutterBottom
-              >
-                Account: {signer.address}
-              </Typography>
-              <Typography
-                sx={{ fontSize: 16 }}
-                color='text.primary'
-                gutterBottom
-              >
-                Balance: {balance} ETH
-              </Typography>
-            </CardContent>
-            {/* <CardActions>
-              <Button variant='outlined' size='small' onClick={disconect}>
-                Disconect
-              </Button>
-            </CardActions> */}
-          </Card>
-          <Contract
-            contractInfo={contractInfo}
-            mintTokens={mintTokens}
-            mintLoading={mintLoading}
-            buyTokens={buyTokens}
-            buyTokensLoading={buyTokensLoading}
+    <Box>
+      <Routes>
+        <Route path='/' element={<Layout />}>
+          <Route
+            index
+            element={
+              <Home
+                isConnectedToMetaMask={isConnectedToMetaMask}
+                provider={provider}
+                connectToMetaMask={connectToMetaMask}
+                network={network}
+                signer={signer}
+                isLoading={isLoading}
+                balance={balance}
+              />
+            }
           />
-          <TransactionsLog tsx={tsx} />
-        </Box>
-      )}
+          <Route
+            path='nft'
+            element={
+              <NFTs
+                signer={signer}
+                network={network}
+                balance={balance}
+                isLoading={isLoading}
+              />
+            }
+          />
 
-      {!isConnectedToMetaMask && !provider && !isLoading && (
-        <div className='conectWrapper'>
-          <h3>Please connect to MetaMask</h3>
-          <Button variant='contained' onClick={connectToMetaMask}>
-            Connect
-          </Button>
-        </div>
-      )}
+          <Route path='*' element={<p>Page not found!</p>} />
+        </Route>
+      </Routes>
       <ToastContainer
         position='bottom-center'
         autoClose={3000}
@@ -102,7 +55,7 @@ function App() {
         draggable={false}
         theme='colored'
       />
-    </div>
+    </Box>
   )
 }
 

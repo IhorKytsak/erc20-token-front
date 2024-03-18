@@ -36,6 +36,7 @@ export function useProvider() {
         const balance = await provider.getBalance(signer.address)
         setSigner(signer)
         setBalance(ethers.formatUnits(balance, 'ether'))
+        toast.success('MetaMask account has been changed')
       }
 
       window.ethereum.on('accountsChanged', handleAccountsChanged)
