@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { ethers } from 'ethers'
 import { toast } from 'react-toastify'
-import abi from '../abi.json'
+import ERC20Token from '../abi/ERC20Token.json'
 
 export function useContract(signer) {
   const [contract, setContract] = useState(null)
@@ -17,13 +17,11 @@ export function useContract(signer) {
   })
   const [tsx, setTsx] = useState([])
 
-  const decimals = 18
-
   useEffect(() => {
     if (Boolean(signer)) {
       const newContract = new ethers.Contract(
         process.env.REACT_APP_CONTRACT_ADDRESS,
-        abi,
+        ERC20Token.abi,
         signer
       )
       setContract(newContract)
@@ -49,6 +47,7 @@ export function useContract(signer) {
 
   const getContractData = useCallback(async () => {
     if (Boolean(contract)) {
+      const decimals = await contract.decimals()
       const address = contract.target
       const cap = await contract.cap()
       const name = await contract.name()
@@ -81,8 +80,9 @@ export function useContract(signer) {
       }
       try {
         setBuyTokensLoading(true)
-        const tokenToETH = amountOfTokens / 10
-        const amountInWei = ethers.parseEther(tokenToETH.toString())
+        const amount = (amountOfTokens / 100).toString()
+        const amountInWei = ethers.parseEther(amount)
+
         const transaction = await contract.buyToken({
           value: amountInWei,
         })
@@ -91,7 +91,7 @@ export function useContract(signer) {
         getContractData()
         toast.success('Tokens bought successfully!')
       } catch (error) {
-        console.error('Error buying tokens:')
+        console.error('Error buying tokens:' + error)
         toast.error('Error buying tokens. Please try again.')
       } finally {
         setBuyTokensLoading(false)
@@ -109,10 +109,11 @@ export function useContract(signer) {
       try {
         setMintLoading(true)
         const transaction = await contract.mint(amountOfTokens)
-
         await transaction.wait()
+
         const totalSupply = await contract.totalSupply()
         const accountBalance = await contract.balanceOf(signer.address)
+        const decimals = await contract.decimals()
 
         setContractInfo((prevInfo) => ({
           ...prevInfo,

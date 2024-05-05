@@ -91,6 +91,9 @@ const Contract = ({
             {buyTokensLoading ? 'In progress...' : 'Buy tokens'}
           </Button>
         </Box>
+        <Typography color='text.secondary' gutterBottom>
+          100 TT for 1 ETH
+        </Typography>
       </CardContent>
       <CardActions>
         <Typography sx={{ fontSize: 16 }} color='text.primary' gutterBottom>

@@ -18,7 +18,10 @@ const Layout = () => {
           <Button sx={{ color: '#fff' }}>Home</Button>
         </Link>
         <Link to='/nft'>
-          <Button sx={{ color: '#fff' }}>NFT</Button>
+          <Button sx={{ color: '#fff' }}>My NFT</Button>
+        </Link>
+        <Link to='/marketplace'>
+          <Button sx={{ color: '#fff' }}>Marketplace</Button>
         </Link>
       </AppBar>
 

@@ -7,6 +7,7 @@ import { useProvider } from './hooks/useProvider'
 import Layout from './components/Layout'
 import Home from './pages/home'
 import NFTs from './pages/nft'
+import Marketplace from './pages/marketplace'
 
 function App() {
   const isConnectedToMetaMask = window.ethereum.isConnected()
@@ -36,6 +37,17 @@ function App() {
             path='nft'
             element={
               <NFTs
+                signer={signer}
+                network={network}
+                balance={balance}
+                isLoading={isLoading}
+              />
+            }
+          />
+          <Route
+            path='marketplace'
+            element={
+              <Marketplace
                 signer={signer}
                 network={network}
                 balance={balance}
